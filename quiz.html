@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Country Quiz Game</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+    #quiz-controls {
+      padding: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #timer {
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌍 Country Quiz Game</h1>
+
+
+  <div id="quiz-controls">
+    <p>Choose difficulty:</p>
+    <button onclick="startQuiz('easy')">Easy</button>
+    <button onclick="startQuiz('medium')">Medium</button>
+    <button onclick="startQuiz('hard')">Hard</button>
+    <p id="question"></p>
+    <p id="timer"></p>
+    <p id="score"></p>
+  </div>
+
+
+  <div id="map"></div>
+
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    let map = L.map('map').setView([20, 0], 2);
+
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 5,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+
+    const countries = {
+      easy: [
+        { name: 'France', lat: 46.2, lng: 2.2 },
+        { name: 'Germany', lat: 51.1, lng: 10.4 },
+        { name: 'Italy', lat: 41.9, lng: 12.5 },
+        { name: 'Spain', lat: 40.4, lng: -3.7 }
+      ],
+      medium: [
+        { name: 'Brazil', lat: -14.2, lng: -51.9 },
+        { name: 'India', lat: 20.6, lng: 78.9 },
+        { name: 'South Africa', lat: -30.6, lng: 22.9 },
+        { name: 'Japan', lat: 36.2, lng: 138.2 }
+      ],
+      hard: [
+        { name: 'Bhutan', lat: 27.5, lng: 90.4 },
+        { name: 'Suriname', lat: 4.9, lng: -55.0 },
+        { name: 'Lesotho', lat: -29.6, lng: 28.2 },
+        { name: 'Moldova', lat: 47.0, lng: 28.9 }
+      ]
+    };
+
+
+    let currentCountry = null;
+    let currentLevel = 'easy';
+    let score = 0;
+    let timer;
+    let timeLeft = 30;
+
+
+    function startQuiz(level) {
+      currentLevel = level;
+      score = 0;
+      document.getElementById('score').textContent = `Score: 0`;
+      nextQuestion();
+    }
+
+
+    function nextQuestion() {
+      const list = countries[currentLevel];
+      currentCountry = list[Math.floor(Math.random() * list.length)];
+      document.getElementById('question').textContent = `Click on: ${currentCountry.name}`;
+      resetTimer();
+    }
+
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = 30;
+      document.getElementById('timer').textContent = `Time left: 30s`;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = `Time left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          alert('Time is up!');
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+
+    map.on('click', function (e) {
+      const distance = map.distance(
+        [e.latlng.lat, e.latlng.lng],
+        [currentCountry.lat, currentCountry.lng]
+      );
+      if (distance < 500000) {
+        alert('Correct!');
+        score++;
+      } else {
+        alert(`Wrong! That was ${currentCountry.name}`);
+      }
+      document.getElementById('score').textContent = `Score: ${score}`;
+      nextQuestion();
+    });
+  </script>
+</body>
+</html>
